@@ -285,7 +285,13 @@ class MainActivity : AppCompatActivity() {
             if (!output.exists()) output.mkdir()
 
         } else {
+            // @reference: https://developer.android.com/training/data-storage/app-specific
             // show a dialog first to request from user to free space up before save our pic
+            // To request that the user remove all app cache files instead, set
+            // "action" to ACTION_CLEAR_APP_CACHE.
+            /*
+            Caution: The ACTION_CLEAR_APP_CACHE intent action can substantially affect device battery life and might remove a large number of files from the device.
+             */
             if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.N_MR1) {
                 Intent(ACTION_MANAGE_STORAGE).apply {
                     startActivity(this)
