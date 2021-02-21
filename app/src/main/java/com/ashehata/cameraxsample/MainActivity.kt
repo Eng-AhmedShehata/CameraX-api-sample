@@ -5,6 +5,8 @@ import android.content.Intent
 import android.content.pm.PackageManager
 import android.net.Uri
 import android.os.Bundle
+import android.os.Environment
+import android.os.storage.StorageManager.ACTION_MANAGE_STORAGE
 import android.provider.MediaStore
 import android.util.Log
 import android.util.Size
@@ -34,7 +36,10 @@ class MainActivity : AppCompatActivity() {
         private const val TAG = "CameraXBasic"
         private const val FILENAME_FORMAT = "yyyy-MM-dd-HH-mm-ss-SSS"
         private const val REQUEST_CODE_PERMISSIONS = 10
-        private val REQUIRED_PERMISSIONS = arrayOf(Manifest.permission.CAMERA)
+        private val REQUIRED_PERMISSIONS = arrayOf(
+            Manifest.permission.CAMERA,
+            Manifest.permission.WRITE_EXTERNAL_STORAGE
+        )
     }
 
     private var savedUri: Uri? = null
@@ -79,7 +84,8 @@ class MainActivity : AppCompatActivity() {
             )
         }
 
-        outputDirectory = getOutputDirectory()
+        // getOutputDirectory()
+        outputDirectory = getOutDir()
         cameraExecutor = Executors.newSingleThreadExecutor()
 
         // Set up the listener for take photo button
@@ -267,6 +273,26 @@ class MainActivity : AppCompatActivity() {
         }
         return if (mediaDir != null && mediaDir.exists())
             mediaDir else filesDir
+    }
+
+    private fun getOutDir(): File {
+        var output: File = Environment.getDataDirectory()
+        if (Environment.getExternalStorageState().equals(Environment.MEDIA_MOUNTED)) {
+            // val publicDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS)
+            // We can use following directories: MUSIC, PODCASTS, ALARMS, RINGTONES, NOTIFICATIONS, PICTURES, MOVIES
+            val publicDir = Environment.getExternalStorageDirectory()
+            output = File(publicDir, "My CameraX Sample")
+            if (!output.exists()) output.mkdir()
+
+        } else {
+            // show a dialog first to request from user to free space up before save our pic
+            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.N_MR1) {
+                Intent(ACTION_MANAGE_STORAGE).apply {
+                    startActivity(this)
+                }
+            }
+        }
+        return output
     }
 
     override fun onDestroy() {
